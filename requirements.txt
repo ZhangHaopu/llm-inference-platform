@@ -1,0 +1,25 @@
+# Core ML/Inference
+torch>=2.0.0
+transformers>=4.35.0
+accelerate>=0.24.0
+
+# Serving
+vllm>=0.3.0
+
+# API
+fastapi>=0.104.0
+uvicorn>=0.24.0
+pydantic>=2.0.0
+
+# Observability
+prometheus-client>=0.19.0
+
+# Utilities
+requests>=2.31.0
+python-dotenv>=1.0.0
+pyyaml>=6.0
+
+# Development
+pytest>=7.4.0
+black>=23.0.0
+flake8>=6.0.0
