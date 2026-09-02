@@ -3,18 +3,27 @@ Model loading utilities for quantized LLMs.
 """
 
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
 from typing import Tuple
 
 # Model configuration
-MODEL_ID = "TheBloke/Mistral-7B-Instruct-v0.1-GPTQ"
+MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.1"
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+
+# 4-bit quantization config (works on any platform)
+QUANTIZATION_CONFIG = BitsAndBytesConfig(
+    load_in_4bit=True,
+    bnb_4bit_compute_dtype=torch.float16,
+    bnb_4bit_use_double_quant=True,
+    bnb_4bit_quant_type="nf4"
+) if DEVICE == "cuda" else None
 
 def load_model_and_tokenizer() -> Tuple[AutoModelForCausalLM, AutoTokenizer]:
     """
-    Load quantized Mistral-7B model and tokenizer from HuggingFace.
+    Load Mistral-7B model and tokenizer from HuggingFace.
     
-    Uses GPTQ quantization (4-bit) for reduced memory footprint.
+    On GPU (CUDA): Uses bitsandbytes 4-bit quantization for reduced memory.
+    On CPU: Loads full precision (quantization not supported on CPU).
     Model downloaded and cached locally.
     
     Returns:
@@ -31,17 +40,26 @@ def load_model_and_tokenizer() -> Tuple[AutoModelForCausalLM, AutoTokenizer]:
         tokenizer = AutoTokenizer.from_pretrained(
             MODEL_ID,
             trust_remote_code=True,
-            use_auth_token=False
         )
         
-        # Load quantized model
-        model = AutoModelForCausalLM.from_pretrained(
-            MODEL_ID,
-            device_map="auto",
-            trust_remote_code=True,
-            use_auth_token=False,
-            torch_dtype=torch.float16,  # Half precision for quantized models
-        )
+        # Load model with quantization on GPU, or full precision on CPU
+        if DEVICE == "cuda":
+            print("Loading with 4-bit quantization (bitsandbytes)...")
+            model = AutoModelForCausalLM.from_pretrained(
+                MODEL_ID,
+                quantization_config=QUANTIZATION_CONFIG,
+                device_map="auto",
+                trust_remote_code=True,
+                torch_dtype=torch.float16,
+            )
+        else:
+            print("Loading on CPU (no quantization). This will be slow.")
+            model = AutoModelForCausalLM.from_pretrained(
+                MODEL_ID,
+                device_map="cpu",
+                trust_remote_code=True,
+                torch_dtype=torch.float32,
+            )
         
         print("✓ Model loaded successfully")
         return model, tokenizer
