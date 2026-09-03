@@ -110,6 +110,7 @@ llm-inference-platform/
 - [ ] Benchmark baseline tokens/sec
 
 ### Step 2: vLLM Integration
+- [x] Add a vLLM server launcher for CUDA/Linux hosts
 - [ ] Replace naive `generate()` with vLLM server
 - [ ] Measure throughput improvement (delta from Step 1)
 
