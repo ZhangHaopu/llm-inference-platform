@@ -111,8 +111,10 @@ llm-inference-platform/
 
 ### Step 2: vLLM Integration
 - [x] Add a vLLM server launcher for CUDA/Linux hosts
+- [x] Add a sequential client benchmark for the vLLM endpoint
+- [x] Add a baseline-vs-vLLM comparison script
 - [ ] Replace naive `generate()` with vLLM server
-- [ ] Measure throughput improvement (delta from Step 1)
+- [ ] Measure throughput improvement (delta from Step 1) — needs a GPU run
 
 ### Step 3: FastAPI Gateway
 - [ ] Request validation and async queue
