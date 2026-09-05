@@ -11,7 +11,7 @@ This project deploys a quantized LLM (Mistral-7B or Llama-3-8B in INT4) behind a
 ## Quick Start
 
 ### Prerequisites
-- Python 3.10+
+- Python 3.9+
 - CUDA 11.8+ (for GPU inference)
 - Docker and Docker Compose (optional, for full stack)
 
@@ -117,9 +117,10 @@ llm-inference-platform/
 - [ ] Measure throughput improvement (delta from Step 1) — needs a GPU run
 
 ### Step 3: FastAPI Gateway
-- [ ] Request validation and async queue
-- [ ] API-key authentication
+- [x] Request validation (Pydantic) and async proxy to vLLM
+- [x] API-key authentication
 - [ ] Rate limiting
+- [ ] Async queue / backpressure handling
 
 ### Step 4: Containerization
 - [ ] Dockerfile for model + API
