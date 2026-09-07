@@ -119,7 +119,7 @@ llm-inference-platform/
 ### Step 3: FastAPI Gateway
 - [x] Request validation (Pydantic) and async proxy to vLLM
 - [x] API-key authentication
-- [ ] Rate limiting
+- [x] Rate limiting
 - [ ] Async queue / backpressure handling
 
 ### Step 4: Containerization
