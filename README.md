@@ -146,7 +146,3 @@ llm-inference-platform/
 - [ ] Add Kubernetes manifests for autoscaling
 - [ ] Quantize other models (Llama-3, Mixtral)
 - [ ] Fine-tuning pipeline integration
-
-## Notes
-
-This project is intentionally scope-disciplined: a complete, well-documented v1 with real load-test numbers beats a half-finished "production-ready" version. See `.claude/01_initial.md` for design philosophy and budget notes.
