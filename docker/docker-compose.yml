@@ -1,0 +1,40 @@
+services:
+  vllm:
+    image: vllm/vllm-openai:latest
+    command:
+      - "--model"
+      - "${VLLM_MODEL:-mistralai/Mistral-7B-Instruct-v0.1}"
+      - "--host"
+      - "0.0.0.0"
+      - "--port"
+      - "8000"
+      - "--max-model-len"
+      - "4096"
+      - "--gpu-memory-utilization"
+      - "0.90"
+    ports:
+      - "8000:8000"
+    volumes:
+      - hf-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
+  gateway:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    environment:
+      VLLM_URL: "http://vllm:8000"
+      API_KEYS: "${API_KEYS:?set API_KEYS before starting}"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - vllm
+
+volumes:
+  hf-cache:

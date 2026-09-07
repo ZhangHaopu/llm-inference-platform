@@ -123,8 +123,8 @@ llm-inference-platform/
 - [ ] Async queue / backpressure handling
 
 ### Step 4: Containerization
-- [ ] Dockerfile for model + API
-- [ ] Docker Compose orchestration
+- [x] Dockerfile for model + API
+- [x] Docker Compose orchestration
 
 ### Step 5: Observability
 - [ ] Prometheus metrics (latency, throughput, queue depth)
