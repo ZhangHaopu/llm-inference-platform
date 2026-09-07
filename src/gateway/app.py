@@ -6,7 +6,7 @@ import httpx
 from fastapi import Depends, FastAPI, HTTPException
 from pydantic import BaseModel
 
-from auth import get_api_key
+from rate_limit import check_rate_limit
 
 VLLM_URL = os.environ.get("VLLM_URL", "http://localhost:8000")
 
@@ -27,7 +27,7 @@ async def health() -> dict[str, str]:
 
 @app.post("/v1/completions")
 async def create_completion(
-    request: CompletionRequest, _: str = Depends(get_api_key)
+    request: CompletionRequest, _: None = Depends(check_rate_limit)
 ) -> dict:
     async with httpx.AsyncClient(timeout=300) as client:
         try:
