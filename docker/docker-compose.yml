@@ -31,7 +31,7 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
     environment:
-      VLLM_URL: "http://vllm:8000"
+      VLLM_URL: "${VLLM_URL:-http://vllm:8000}"
       API_KEYS: "${API_KEYS:?set API_KEYS before starting}"
     ports:
       - "8080:8080"
@@ -40,6 +40,9 @@ services:
 
   prometheus:
     image: prom/prometheus:latest
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-remote-write-receiver"
     volumes:
       - ../monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     ports:
