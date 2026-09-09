@@ -3,7 +3,9 @@ services:
     image: vllm/vllm-openai:latest
     command:
       - "--model"
-      - "${VLLM_MODEL:-mistralai/Mistral-7B-Instruct-v0.1}"
+      - "${VLLM_MODEL:-TheBloke/Mistral-7B-Instruct-v0.1-AWQ}"
+      - "--quantization"
+      - "${VLLM_QUANTIZATION:-awq}"
       - "--host"
       - "0.0.0.0"
       - "--port"

@@ -6,12 +6,14 @@ import sys
 
 import torch
 
-DEFAULT_MODEL_ID = "mistralai/Mistral-7B-Instruct-v0.1"
+DEFAULT_MODEL_ID = "TheBloke/Mistral-7B-Instruct-v0.1-AWQ"
+DEFAULT_QUANTIZATION = "awq"
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--model", default=DEFAULT_MODEL_ID)
+    parser.add_argument("--quantization", default=DEFAULT_QUANTIZATION)
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--max-model-len", type=int, default=4096)
@@ -34,6 +36,8 @@ def main() -> int:
         "vllm",
         "serve",
         args.model,
+        "--quantization",
+        args.quantization,
         "--host",
         args.host,
         "--port",
