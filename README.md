@@ -127,8 +127,8 @@ llm-inference-platform/
 - [x] Docker Compose orchestration
 
 ### Step 5: Observability
-- [ ] Prometheus metrics (latency, throughput, queue depth)
-- [ ] Grafana dashboard
+- [x] Prometheus metrics (latency, throughput, queue depth)
+- [x] Grafana dashboard
 
 ### Step 6: Load Testing & Tuning
 - [ ] Locust/k6 load tests
