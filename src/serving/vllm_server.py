@@ -18,6 +18,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--port", type=int, default=8000)
     parser.add_argument("--max-model-len", type=int, default=4096)
     parser.add_argument("--gpu-memory-utilization", type=float, default=0.90)
+    parser.add_argument("--max-num-seqs", type=int, default=None)
     return parser.parse_args()
 
 
@@ -47,6 +48,8 @@ def main() -> int:
         "--gpu-memory-utilization",
         str(args.gpu_memory_utilization),
     ]
+    if args.max_num_seqs is not None:
+        command += ["--max-num-seqs", str(args.max_num_seqs)]
 
     print("Starting vLLM:", " ".join(command))
     return subprocess.call(command)
