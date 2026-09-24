@@ -1,27 +1,33 @@
+# Versions pinned to what was confirmed working on the GPU deployment
+# (Python 3.12.3, CUDA 13.0, NVIDIA L4) — see benchmarks/EXPERIMENTS.md.
+# Unpinned ranges drift over time and can silently change performance
+# characteristics or defaults (vLLM's CLI/config shape changed materially
+# between the 0.11.0 used locally during development and 0.30.0 here).
+
 # Core ML/Inference
-torch>=2.0.0
-transformers>=4.35.0
-accelerate>=0.24.0
-bitsandbytes>=0.41.0  # For 4-bit quantization on GPU
+torch==2.13.0
+transformers==5.17.0
+accelerate==1.15.0
+bitsandbytes==0.50.2  # For 4-bit quantization on GPU
 
 # Serving
-vllm>=0.3.0
+vllm==0.30.0
 
 # API
-fastapi>=0.104.0
-uvicorn>=0.24.0
-pydantic>=2.0.0
+fastapi==0.136.3
+uvicorn==0.53.0
+pydantic==2.13.5
 
 # Observability
-prometheus-client>=0.19.0
+prometheus-client==0.26.0
 
 # Utilities
-requests>=2.31.0
-httpx>=0.25.0
-python-dotenv>=1.0.0
-pyyaml>=6.0
+requests==2.34.2
+httpx==0.28.1
+python-dotenv==1.2.3
+pyyaml==6.0.3
 
 # Development
-pytest>=7.4.0
-black>=23.0.0
-flake8>=6.0.0
+pytest==9.1.1
+black==26.5.1
+flake8==7.4.1

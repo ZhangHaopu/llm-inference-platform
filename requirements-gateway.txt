@@ -1,7 +1,11 @@
 # Gateway-only dependencies (excludes torch/vllm/transformers, which belong
 # to the separate vLLM serving image, not this lightweight proxy).
-fastapi>=0.104.0
-uvicorn>=0.24.0
-httpx>=0.25.0
-pydantic>=2.0.0
-prometheus-client>=0.19.0
+# Versions pinned to what's actually installed in the built image (Python
+# 3.9 — different resolved versions than the GPU pod's Python 3.12
+# environment in requirements.txt, confirmed via `pip freeze` inside the
+# container rather than assumed).
+fastapi==0.128.8
+uvicorn==0.39.0
+httpx==0.28.1
+pydantic==2.13.5
+prometheus-client==0.26.0
