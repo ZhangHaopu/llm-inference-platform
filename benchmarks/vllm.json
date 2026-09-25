@@ -1,0 +1,49 @@
+{
+  "endpoint": "http://localhost:8000/v1/completions",
+  "model": "TheBloke/Mistral-7B-Instruct-v0.1-AWQ",
+  "num_runs": 5,
+  "max_tokens_per_prompt": 100,
+  "runs": [
+    {
+      "run": 1,
+      "prompt": "What is machine learning?",
+      "completion_tokens": 89,
+      "elapsed_seconds": 1.66,
+      "tokens_per_second": 53.6
+    },
+    {
+      "run": 2,
+      "prompt": "Explain how neural networks work in simple terms.",
+      "completion_tokens": 100,
+      "elapsed_seconds": 1.639,
+      "tokens_per_second": 61.0
+    },
+    {
+      "run": 3,
+      "prompt": "Write a brief Python function that calculates factorial.",
+      "completion_tokens": 100,
+      "elapsed_seconds": 1.627,
+      "tokens_per_second": 61.45
+    },
+    {
+      "run": 4,
+      "prompt": "Describe the process of photosynthesis in plants.",
+      "completion_tokens": 100,
+      "elapsed_seconds": 1.629,
+      "tokens_per_second": 61.39
+    },
+    {
+      "run": 5,
+      "prompt": "What are the main differences between supervised and unsupervised learning?",
+      "completion_tokens": 100,
+      "elapsed_seconds": 1.629,
+      "tokens_per_second": 61.38
+    }
+  ],
+  "summary": {
+    "total_completion_tokens": 489,
+    "total_time_seconds": 8.185,
+    "aggregate_tokens_per_second": 59.74,
+    "average_request_latency_seconds": 1.637
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "num_prompts": 5,
+  "max_tokens_per_prompt": 100,
+  "runs": [
+    {
+      "prompt": "What is machine learning?",
+      "tokens_generated": 86,
+      "elapsed_seconds": 3.26,
+      "tokens_per_sec": 26.37
+    },
+    {
+      "prompt": "Explain how neural networks work in simple terms.",
+      "tokens_generated": 102,
+      "elapsed_seconds": 2.34,
+      "tokens_per_sec": 43.54
+    },
+    {
+      "prompt": "Write a brief Python function that calculates factorial.",
+      "tokens_generated": 46,
+      "elapsed_seconds": 1.08,
+      "tokens_per_sec": 42.6
+    },
+    {
+      "prompt": "Describe the process of photosynthesis in plants.",
+      "tokens_generated": 102,
+      "elapsed_seconds": 2.4,
+      "tokens_per_sec": 42.43
+    },
+    {
+      "prompt": "What are the main differences between supervised and unsupervised learning?",
+      "tokens_generated": 102,
+      "elapsed_seconds": 2.58,
+      "tokens_per_sec": 39.54
+    }
+  ],
+  "summary": {
+    "total_tokens": 438,
+    "total_time_seconds": 11.67,
+    "average_tokens_per_sec": 37.54
+  }
+}
