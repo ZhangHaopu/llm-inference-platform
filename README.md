@@ -6,7 +6,7 @@ A production-grade inference platform for quantized large language models (LLMs)
 
 This project deploys a quantized LLM (Mistral-7B or Llama-3-8B in INT4) behind a FastAPI gateway with observability (Prometheus + Grafana), orchestrated via Docker Compose, and load-tested to measure real-world performance.
 
-**Target Deployment:** Single GPU (~8GB VRAM) with concurrent request handling, sub-500ms p99 latency, and ~100+ tokens/sec throughput.
+**Actual deployment:** Single GPU (NVIDIA L4, 24GB VRAM) with concurrent request handling — ~308 tokens/sec and p99=1910ms at 10 concurrent users, ~256-300 concurrent users supported, and ~19x faster perceived responsiveness (time-to-first-token) via streaming. Full results: [Benchmark Results](#benchmark-results).
 
 ## Quick Start
 
