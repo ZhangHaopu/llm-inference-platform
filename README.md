@@ -64,15 +64,20 @@ python src/gateway/app.py
 
 ## Benchmark Results
 
-*To be updated after load testing*
+Measured on a rented NVIDIA L4 (24GB), AWQ-quantized Mistral-7B served via
+vLLM. Full methodology, all 11 experiments, and how each number was derived:
+[`benchmarks/EXPERIMENTS.md`](benchmarks/EXPERIMENTS.md).
 
 | Metric | Value |
 |--------|-------|
-| Throughput (tokens/sec) | -- |
-| p50 Latency (ms) | -- |
-| p99 Latency (ms) | -- |
-| Concurrent Users Supported | -- |
-| Memory Usage (GB) | -- |
+| Throughput (10 concurrent users) | ~308 tokens/sec (vs 37.54 tok/s naive sequential baseline — ~8x) |
+| p50 Latency (10 concurrent users) | 1580 ms |
+| p99 Latency (10 concurrent users) | 1910 ms |
+| Time-to-first-token (streaming, avg) | 78.8 ms (vs 1497 ms non-streaming — ~19x) |
+| Concurrent Users Supported | ~256-300 (vLLM's own scheduler limit, confirmed via its internal metrics) |
+| GPU Memory Usage | ~20.4 GB / 23 GB (L4) |
+
+![Grafana dashboard showing live gateway and k6 load test metrics during the concurrency stress tests](monitoring/grafana-dashboards/dashboard-screenshots.png)
 
 ## Project Structure
 
@@ -105,22 +110,23 @@ llm-inference-platform/
 ## Development Progress
 
 ### Step 1: Model Quantization
-- [ ] Download Mistral-7B-Instruct INT4 (pre-quantized from HuggingFace)
-- [ ] Verify model loads and generates text
-- [ ] Benchmark baseline tokens/sec
+- [x] Download Mistral-7B-Instruct INT4 (AWQ pre-quantized, for vLLM; bitsandbytes on-the-fly NF4 for the baseline path)
+- [x] Verify model loads and generates text
+- [x] Benchmark baseline tokens/sec — 37.54 tok/s
 
 ### Step 2: vLLM Integration
 - [x] Add a vLLM server launcher for CUDA/Linux hosts
 - [x] Add a sequential client benchmark for the vLLM endpoint
 - [x] Add a baseline-vs-vLLM comparison script
-- [ ] Replace naive `generate()` with vLLM server
-- [ ] Measure throughput improvement (delta from Step 1) — needs a GPU run
+- [x] Replace naive `generate()` with vLLM server
+- [x] Measure throughput improvement — 59.74 tok/s sequential (1.59x), ~308 tok/s at 10 concurrent users (~8x)
 
 ### Step 3: FastAPI Gateway
 - [x] Request validation (Pydantic) and async proxy to vLLM
 - [x] API-key authentication
 - [x] Rate limiting
-- [ ] Async queue / backpressure handling
+- [x] Async queue / backpressure handling
+- [x] Streaming responses (SSE) — ~19x better time-to-first-token vs non-streaming
 
 ### Step 4: Containerization
 - [x] Dockerfile for model + API
@@ -131,9 +137,9 @@ llm-inference-platform/
 - [x] Grafana dashboard
 
 ### Step 6: Load Testing & Tuning
-- [ ] Locust/k6 load tests
-- [ ] p50/p95/p99 latency benchmarks
-- [ ] Batch size optimization
+- [x] k6 load tests — fixed-load and staircase stress tests up to 1000 concurrent users
+- [x] p50/p95/p99 latency benchmarks
+- [x] Batch size / scheduler tuning — found and confirmed vLLM's real concurrency ceiling (`max-num-seqs=256`)
 
 ### Step 7: Polish & Publish
 - [ ] Final README, commit history
