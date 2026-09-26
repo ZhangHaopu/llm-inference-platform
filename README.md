@@ -4,37 +4,72 @@ A production-grade inference platform for quantized large language models (LLMs)
 
 ## Overview
 
-This project deploys a quantized LLM (Mistral-7B or Llama-3-8B in INT4) behind a FastAPI gateway with observability (Prometheus + Grafana), orchestrated via Docker Compose, and load-tested to measure real-world performance.
+This project serves an AWQ INT4-quantized Mistral-7B via vLLM behind a FastAPI gateway (API-key auth, per-key rate limiting, concurrency backpressure, SSE streaming), with observability (Prometheus + Grafana), orchestrated via Docker Compose, and load-tested with k6 on a real GPU to measure real-world performance.
 
 **Actual deployment:** Single GPU (NVIDIA L4, 24GB VRAM) with concurrent request handling — ~308 tokens/sec and p99=1910ms at 10 concurrent users, ~256-300 concurrent users supported, and ~19x faster perceived responsiveness (time-to-first-token) via streaming. Full results: [Benchmark Results](#benchmark-results).
 
 ## Quick Start
 
 ### Prerequisites
-- Python 3.9+
-- CUDA 11.8+ (for GPU inference)
-- Docker and Docker Compose (optional, for full stack)
+- A Linux host with an NVIDIA GPU for vLLM (tested on an L4, 24GB) and **Python 3.10+** there (vLLM does not import on 3.9)
+- Docker and Docker Compose for the gateway, Prometheus and Grafana (the gateway image itself runs Python 3.9)
+- [k6](https://k6.io) for load tests
 
-### Setup
+This is the path that was actually run and measured. The step-by-step runbook, including what to watch during load tests, is in [`DEPLOYMENT.md`](DEPLOYMENT.md).
+
+### 1. Start vLLM on the GPU host
 
 ```bash
-# Clone and navigate
-git clone <repo-url>
+git clone https://github.com/ZhangHaopu/llm-inference-platform.git
 cd llm-inference-platform
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate
-
-# Install dependencies
+python3 -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 
-# Download and test the model
-python src/serving/download_model.py
-
-# Run the API server
-python src/gateway/app.py
+# Serves TheBloke/Mistral-7B-Instruct-v0.1-AWQ on :8000 (downloads weights on first run)
+python src/serving/vllm_server.py
 ```
+
+Tunable flags: `--gpu-memory-utilization`, `--max-model-len`, `--max-num-seqs`.
+
+### 2. Start the gateway and monitoring
+
+On any machine with Docker, pointed at the vLLM host:
+
+```bash
+export API_KEYS="key1,key2"                    # comma-separated valid API keys
+export VLLM_URL="http://<gpu-host>:8000"       # host.docker.internal:8000 if using an SSH tunnel
+export MAX_CONCURRENT_REQUESTS=150             # optional, gateway concurrency cap (default 10)
+
+docker compose -f docker/docker-compose.yml up -d --build --no-deps gateway prometheus grafana
+```
+
+Gateway on `:8080`, Prometheus on `:9090`, Grafana on `:3000` (`admin` / `admin`; add a Prometheus data source at `http://prometheus:9090`).
+
+### 3. Send a request
+
+```bash
+curl -N -X POST http://localhost:8080/v1/completions \
+  -H "Content-Type: application/json" -H "X-API-Key: key1" \
+  -d '{"model":"TheBloke/Mistral-7B-Instruct-v0.1-AWQ","prompt":"What is machine learning?","max_tokens":50,"stream":true}'
+```
+
+Set `"stream": false` for a single JSON response.
+
+### 4. Load test and benchmark
+
+```bash
+# One API key per virtual user, so the per-key rate limiter doesn't dominate the results
+API_KEYS="k1,k2,k3,k4,k5,k6,k7,k8,k9,k10" MODEL="TheBloke/Mistral-7B-Instruct-v0.1-AWQ" \
+  k6 run -o experimental-prometheus-rw loadtest/load_test.js
+
+# Naive generate() baseline vs vLLM, from the repo root on the GPU host
+# (results are written to benchmarks/baseline.json and benchmarks/vllm.json)
+python src/serving/benchmark_baseline.py
+python src/serving/benchmark_vllm.py --model TheBloke/Mistral-7B-Instruct-v0.1-AWQ
+python src/serving/compare_benchmarks.py
+```
+
+The `vllm` service in `docker-compose.yml` (all-in-one on a GPU host with the NVIDIA Container Toolkit) is defined but was not exercised during testing; vLLM was run directly on the GPU host as above.
 
 ## Architecture
 
@@ -45,8 +80,8 @@ python src/gateway/app.py
                  │
         ┌────────▼────────┐
         │   FastAPI       │
-        │   Gateway       │ (Rate limiting, API-key auth,
-        │                 │  async queue)
+        │   Gateway       │ (API-key auth, rate limiting,
+        │                 │  backpressure, SSE streaming)
         └────────┬────────┘
                  │
         ┌────────▼────────┐
@@ -55,8 +90,8 @@ python src/gateway/app.py
         └────────┬────────┘
                  │
         ┌────────▼────────┐
-        │ Mistral-7B INT4 │
-        │  (quantized)    │
+        │ Mistral-7B AWQ  │
+        │  (INT4)         │
         └─────────────────┘
 
         Observability: Prometheus → Grafana
@@ -83,28 +118,30 @@ vLLM. Full methodology, all 11 experiments, and how each number was derived:
 
 ```
 llm-inference-platform/
-├── README.md                  # This file
-├── requirements.txt           # Python dependencies
-├── .gitignore                 # Git exclusions
+├── README.md
+├── DEPLOYMENT.md              # GPU deployment runbook
+├── requirements.txt           # GPU host dependencies (pinned)
+├── requirements-gateway.txt   # Gateway image dependencies (pinned)
 ├── src/
-│   ├── gateway/              # FastAPI app
-│   │   ├── app.py
-│   │   ├── auth.py
-│   │   └── queue.py
-│   └── serving/              # vLLM / model logic
+│   ├── gateway/               # FastAPI gateway
+│   │   ├── app.py             # Proxy, backpressure, streaming, metrics
+│   │   ├── auth.py            # API-key auth
+│   │   └── rate_limit.py      # Per-key token bucket
+│   └── serving/               # vLLM launcher, model loading, benchmarks
+│       ├── vllm_server.py
 │       ├── model_loader.py
-│       └── download_model.py
+│       ├── benchmark_baseline.py
+│       ├── benchmark_vllm.py
+│       └── compare_benchmarks.py
 ├── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
+│   ├── Dockerfile             # Gateway image
+│   └── docker-compose.yml     # vLLM, gateway, Prometheus, Grafana
 ├── monitoring/
 │   ├── prometheus.yml
-│   └── grafana/
-├── loadtest/                 # Locust/k6 scripts
-│   ├── locustfile.py
-│   └── results/
-└── benchmarks/               # Analysis & reports
-    └── results.md
+│   └── grafana-dashboards/
+├── loadtest/                  # k6 scripts: fixed load, stress staircases, TTFT
+└── benchmarks/                # Raw results and the 11-experiment log
+    └── EXPERIMENTS.md
 ```
 
 ## Development Progress
